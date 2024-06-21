@@ -1,0 +1,92 @@
+#!/bin/bash
+
+declare -a answers
+
+declare dir="${0%%/*}"
+
+# Read them from a file, -t cuts \n
+readarray -t answers < "${dir:-.}/answers.txt"
+
+# answers=("It is certain" \
+# "Reply hazy, try again" \
+# "Don’t count on it" \
+# "It is decidedly so" \
+# "Ask again later" \
+# "My reply is no" \
+# "Without a doubt" \
+# "Better not tell you now" \
+# "My sources say no" \
+# "Yes definitely" \
+# "Cannot predict now" \
+# "Outlook not so good" \
+# "You may rely on it" \
+# "Concentrate and ask again" \
+# "Very doubtful" \
+# "As I see it, yes" \
+# "Most likely" \
+# "Outlook good" \
+# "Yes" \
+# "Signs point to yes")
+
+art="
+        ____
+    ,dP9CGG88@b,
+  ,IP  _   Y888@@b,
+ dIi  (_)   G8888@b
+dCII  (_)   G8888@@b
+GCCIi     ,GG8888@@@
+GGCCCCCCCGGG88888@@@
+GGGGCCCGGGG88888@@@@...
+Y8GGGGGG8888888@@@@P.....
+ Y88888888888@@@@@P......
+ \`Y8888888@@@@@@@P'......
+    \`@@@@@@@@@P'.......
+        \"\"\"\"........
+"
+
+welcome()
+{
+  echo "$art"
+  cat <<-EOF
+Welcome to the magic eight ball. Enter a yes or no question
+and your answer will be granted.
+EOF
+}
+
+answer()
+{
+  echo "${answers[RANDOM%${#answers}]}"
+}
+
+noarray()
+{
+  local number
+  number=$((RANDOM % 3))
+
+  # Could use case
+  if [[ "$number" == 1 ]]; then
+    echo 'Yes'
+  elif [[ "$number" == 2 ]]; then
+    echo 'No'
+  else
+    echo 'Maybe'
+  fi
+}
+
+8ball()
+{
+  if [[ $# != 0 && -n "$*" ]]; then
+    answer
+    exit 0
+  fi
+
+  welcome
+  while IFS= read -p "> " line;
+  do
+    # if send questions in file:
+    printf "Q: %s\nA: " "$line"
+    answer
+  done
+}
+
+8ball "$@"
