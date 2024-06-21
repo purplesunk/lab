@@ -1,0 +1,57 @@
+;; The first three lines of this file were inserted by DrRacket. They record metadata
+;; about the language level of this file in a form that our tools can easily process.
+#reader(lib "htdp-beginner-reader.ss" "lang")((modname text-editor) (read-case-sensitive #t) (teachpacks ()) (htdp-settings #(#t constructor repeating-decimal #f #t none #f () #f)))
+(require 2htdp/image)
+(require 2htdp/universe)
+
+;; Simple text editor
+
+;; =================
+;; Constants:
+
+(define WIDTH 500)
+(define HEIGHT 30)
+
+(define CTR-Y (/ HEIGHT 2))
+
+(define TEXT-SIZE (- HEIGHT 6))
+(define TEXT-COLOR "black")
+(define CURSOR-COLOR "red")
+
+(define CURSOR (rectangle 1 HEIGHT "solid" CURSOR-COLOR))
+
+(define MTS (empty-scene WIDTH HEIGHT))
+
+;; =================
+;; Data definitions:
+
+(define-struct es (text x))
+;; EditorState is (make-es String Natural[0, string-length of text])
+;;   text is the text show in the editor
+;;   x is the position of the cursor in the string
+
+(define ES1 (make-es "Hola Mundo" 9))
+
+#;
+(define (fn-for-es es)
+  (... (es-text es) ; String
+       (es-x es)))  ; Natural[0, string-lenght of text]
+
+;; =================
+;; Functions:
+
+;; EditorState -> EditorState
+;; start the world with ...
+;; 
+(define (main es)
+  (big-bang es                   ; EditorState
+            (to-draw   render)   ; EditorState -> Image
+            (on-key    ...)))    ; EditorState KeyEvent -> EditorState
+
+
+;; EditorState -> Image
+;; Produce image of the string in the EditorState with the cursor in the right position
+;; !!!
+(define (render es) ...)
+
+; EditorState KeyEvent -> EditorState

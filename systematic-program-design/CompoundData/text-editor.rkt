@@ -1,0 +1,136 @@
+;; The first three lines of this file were inserted by DrRacket. They record metadata
+;; about the language level of this file in a form that our tools can easily process.
+#reader(lib "htdp-beginner-reader.ss" "lang")((modname text-editor) (read-case-sensitive #t) (teachpacks ()) (htdp-settings #(#t constructor repeating-decimal #f #t none #f () #f)))
+(require 2htdp/image)
+(require 2htdp/universe)
+
+;; Simple text editor
+
+;; =================
+;; Constants:
+
+(define WIDTH 300)
+(define HEIGHT 30)
+
+(define TEXT-SIZE (- HEIGHT 6))
+(define TEXT-COLOR "black")
+(define CURSOR-COLOR "red")
+
+(define CURSOR (rectangle 1 TEXT-SIZE "solid" CURSOR-COLOR))
+
+(define MTS (empty-scene WIDTH HEIGHT))
+
+;; =================
+;; Data definitions:
+
+(define-struct es (text x))
+;; EditorState is (make-es String Interger[0, Length of text])
+;;   text is the text show in the editor
+;;   x is the position of the cursor in the string
+
+(define ES1 (make-es "Hola Mundo" 9))
+
+#;
+(define (fn-for-es es)
+  (... (es-text es) ; String
+       (es-x es)))  ; Interger[0, Length of text]
+
+;; =================
+;; Functions:
+
+;; EditorState -> EditorState
+;; start the world with ...
+;; 
+(define (main es)
+  (big-bang es                          ; EditorState
+    (to-draw   render)          ; EditorState -> Image
+    (on-key    handle-key)))    ; EditorState KeyEvent -> EditorState
+
+
+;; EditorState -> Image
+;; Produce image of the string in the EditorState with the cursor in the right position
+(check-expect
+ (render (make-es "Hola Mundo" 10))
+ (place-image/align (beside (text "Hola Mundo" TEXT-SIZE TEXT-COLOR) CURSOR)
+                    0 0 "left" "top" MTS))
+
+(check-expect
+ (render (make-es "Hello, World" 5))
+ (place-image/align (beside (text "Hello" TEXT-SIZE TEXT-COLOR)
+                            CURSOR
+                            (text ", World" TEXT-SIZE TEXT-COLOR))
+                    0 0 "left" "top" MTS))
+
+
+;(define (render es) MTS);stub
+
+(define (render es)
+  (place-image/align
+   (beside (text (substring (es-text es) 0 (es-x es)) TEXT-SIZE TEXT-COLOR)
+           CURSOR
+           (text (substring (es-text es) (es-x es)) TEXT-SIZE TEXT-COLOR))
+   0 0 "left" "top" MTS))
+
+
+;; EditorState KeyEvent -> EditorState
+;; Add caracters to the string and move the cursor with the arrow keys
+(define (handle-key es ke)
+  (cond [(key=? ke "left") (cursor-left es)]
+        [(key=? ke "right") (cursor-right es)]
+        [(key=? ke "\b") (del-ch es)]
+        [(= (string-length ke) 1) (add-ch es ke)]
+        [else es]))
+
+;; EditorState String -> EditorState
+;; Add caracter in the right position
+(check-expect (add-ch (make-es "hola" 4) " ") (make-es "hola " (+ 4 1)))
+(check-expect (add-ch (make-es "hola" 2) "a") (make-es "hoala" (+ 2 1)))
+(check-expect (add-ch (make-es "hola" 0) " ") (make-es " hola" (+ 0 1)))
+;(define (add-ch es ch) (make-es "hola" 0));stub
+
+(define (add-ch es ch)
+  (make-es
+   (string-append
+    (substring (es-text es) 0 (es-x es))
+    ch
+    (substring (es-text es) (es-x es)))
+   (+ (es-x es) 1)))
+
+;; EditorState -> EditorState
+;; Delete caracter under the cursor
+(check-expect (del-ch (make-es "hola" 4)) (make-es "hol" (- 4 1)))
+(check-expect (del-ch (make-es "hola" 1)) (make-es "ola" (- 1 1)))
+(check-expect (del-ch (make-es "hola" 2)) (make-es "hla" (- 2 1)))
+(check-expect (del-ch (make-es "hola" 0)) (make-es "hola" 0))
+;(define (del-ch es) (make-es "hola" 0));stub
+
+(define (del-ch es)
+  (if (= (es-x es) 0) es
+      (make-es (string-append
+                (substring (es-text es) 0 (- (es-x es) 1))
+                (substring (es-text es) (es-x es)))
+               (- (es-x es) 1))))
+
+;; EditorState -> EditorState
+;; Change cursor position to the right if posible
+(check-expect (cursor-right (make-es "hola" 2)) (make-es "hola" 3))
+(check-expect (cursor-right (make-es "hola" (+ (string-length "hola") 1))) (make-es "hola" (+ (string-length "hola") 1)))
+
+;(define (cursor-right es) (make-es "hola" 0));stub
+
+(define (cursor-right es)
+  (if (> (+ (es-x es) 1) (string-length (es-text es)))
+      es
+      (make-es (es-text es) (+ (es-x es) 1))))
+
+;; EditorState -> EditorState
+;; Change cursor position to the right if posible
+(check-expect (cursor-left (make-es "hola" 2)) (make-es "hola" 1))
+(check-expect (cursor-left (make-es "hola" 0)) (make-es "hola" 0))
+
+;(define (cursor-left es) (make-es "hola" 0));stub
+
+(define (cursor-left es)
+  (if (< (- (es-x es) 1) 0)
+      es
+      (make-es (es-text es) (- (es-x es) 1))))
