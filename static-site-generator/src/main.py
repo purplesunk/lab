@@ -48,8 +48,10 @@ def split_nodes_delimiter(old_nodes, delimiter, text_type):
             new_nodes.append(node)
     return new_nodes
 
+
 def extract_markdown_images(text):
     return re.findall(r"!\[(.*?)\]\((.*?)\)", text)
+
 
 def extract_markdown_links(text):
     return re.findall(r"\[(.*?)\]\((.*?)\)", text)
@@ -64,9 +66,8 @@ def split_nodes_image(old_nodes):
             new_nodes.append(node)
             continue
 
-        original_text = node.text
-        
         new_node_list = []
+        original_text = node.text
         for image_tup in images:
             splited_text = original_text.split(f"![{image_tup[0]}]({image_tup[1]})", 1)
             if splited_text[0]:
@@ -75,7 +76,8 @@ def split_nodes_image(old_nodes):
             original_text = splited_text[1];
 
         new_nodes.extend(new_node_list)
-
+        if original_text:
+            new_nodes.append(TextNode(original_text, text_type_text))
     return new_nodes
 
 
@@ -88,9 +90,8 @@ def split_nodes_link(old_nodes):
             new_nodes.append(node)
             continue
 
-        original_text = node.text
-        
         new_node_list = []
+        original_text = node.text
         for link_tup in links:
             splited_text = original_text.split(f"[{link_tup[0]}]({link_tup[1]})", 1)
             if splited_text[0]:
@@ -99,12 +100,21 @@ def split_nodes_link(old_nodes):
             original_text = splited_text[1];
 
         new_nodes.extend(new_node_list)
-
+        if original_text:
+            new_nodes.append(TextNode(original_text, text_type_text))
     return new_nodes
 
 
+def text_to_textnodes(text):
+    text_node = [TextNode(text, text_type_text)]
+    nodes_code = split_nodes_delimiter(text_node, "`", text_type_code)
+    nodes_bold = split_nodes_delimiter(nodes_code, "**", text_type_bold)
+    nodes_italic = split_nodes_delimiter(nodes_bold, "*", text_type_italic)
+    return split_nodes_link(split_nodes_image(nodes_italic))
+
+
 def main():
-    print("hello")
+    print(" asd")
 
 
 main()
