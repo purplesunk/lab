@@ -1,5 +1,7 @@
 import re
 
+from functools import reduce
+
 from textnode import TextNode
 from htmlnode import HTMLNode 
 from leafnode import LeafNode 
@@ -11,6 +13,13 @@ text_type_italic = "italic"
 text_type_code = "code"
 text_type_link = "link"
 text_type_image = "image"
+
+block_type_paragraph = "paragraph"
+block_type_code = "codeblock"
+block_type_heading = "heading"
+block_type_quote = "quoteblock"
+block_type_ulist = "unordered list"
+block_type_olist = "ordered list"
 
 def text_node_to_html_node(text_node):
     text_type = text_node.text_type
@@ -113,8 +122,49 @@ def text_to_textnodes(text):
     return split_nodes_link(split_nodes_image(nodes_italic))
 
 
-def main():
-    print(" asd")
+def markdown_to_blocks(markdown):
+    lines = list(map(lambda s: s.strip(), markdown.split("\n")))
 
+    block = []
+    blocks = []
+    for line in lines:
+        if not line and block:
+            blocks.append("\n".join(block))
+            block = []
+        if line:
+            block.append(line)
+
+    if block:
+        blocks.append("\n".join(block))
+
+    return blocks
+
+
+def block_to_block_type(block):
+    if (block.startswith("```")
+        and block.endswith("```")):
+        return block_type_code
+
+    lines = block.split("\n")
+    if (re.search(r"^#{1,6} ", block)
+        and len(lines) == 1):
+        return block_type_heading
+
+    if all(line.startswith("> ") for line in lines):
+        return block_type_quote
+    if all(line.startswith(("* ", "- ")) for line in lines):
+        return block_type_ulist
+
+    olist = True
+    for i in range(0, len(lines)):
+        if not lines[i].startswith(f"{i + 1}. "):
+            olist = False
+    if olist:
+        return block_type_olist
+    return block_type_paragraph
+
+
+def main():
+    print("hola")
 
 main()
