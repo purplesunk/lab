@@ -74,7 +74,7 @@ def block_to_ol(block):
     return ParentNode("ol", children)
 
 def block_to_code(block):
-    return ParentNode("pre", ParentNode("code", LeafNode(None, block)))
+    return ParentNode("pre", [ParentNode("code", [LeafNode(None, block[4:-3])])])
 
 def block_to_heading(block):
     heading = block.split(" ", 1)
