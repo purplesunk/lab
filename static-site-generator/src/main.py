@@ -63,8 +63,24 @@ def generate_page(from_path, template_path, dest_path):
     file.close()
 
 
+def generate_pages_recursive(dir_path_content, template_path, dest_dir_path):
+    if os.path.exists(dir_path_content):
+        if os.path.isdir(dir_path_content):
+            dest_dir = dir_path_content.replace(dir_path_content, dest_dir_path) 
+            if not os.path.exists(dest_dir):
+                os.mkdir(dest_dir)
+            content_list = list(map(lambda x: os.path.join(dir_path_content, x), os.listdir(dir_path_content)))
+            dest_list = list(map(lambda x: x.replace(dir_path_content, dest_dir_path, 1), content_list))
+            for i in range(0, len(content_list)):
+                generate_pages_recursive(content_list[i], template_path, dest_list[i])
+        elif (os.path.isfile(dir_path_content)
+              and dir_path_content.endswith(".md")):
+            generate_page(dir_path_content, template_path, dest_dir_path.replace(".md", ".html"))
+
+
 def main():
     copy_from_static()
-    generate_page("content/index.md", "template.html", "public/index.html")
+    generate_pages_recursive("content", "template.html", "public")
+
 
 main()
