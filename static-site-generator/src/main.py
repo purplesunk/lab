@@ -22,19 +22,20 @@ block_type_ulist = "unordered list"
 block_type_olist = "ordered list"
 
 def text_node_to_html_node(text_node):
+    text = text_node.text
     text_type = text_node.text_type
     if text_type == text_type_text:
         return LeafNode(None, text) 
     if text_type == text_type_bold:
-        return LeafNode(b, text) 
+        return LeafNode("b", text) 
     if text_type == text_type_italic:
-        return LeafNode(i, text) 
+        return LeafNode("i", text) 
     if text_type == text_type_code:
-        return LeafNode(code, text) 
+        return LeafNode("code", text)
     if text_type == text_type_link:
-        return LeafNode(a, text, {"href": text_node.url}) 
+        return LeafNode("a", text, {"href": text_node.url}) 
     if text_type == text_type_image:
-        return LeafNode(img, "", {"alt": text_node.text, "src": text_node.url})
+        return LeafNode("img", "", {"alt": text, "src": text_node.url})
 
     raise Exception(f"Invalid text type in {text_node}.")
 
@@ -164,7 +165,61 @@ def block_to_block_type(block):
     return block_type_paragraph
 
 
+def block_to_blockquote(block):
+    text = " ".join(list(map(lambda x: x.replace("> ", "", 1), block.split("\n"))))
+    children = list(map(text_node_to_html_node, text_to_textnodes(text)))
+    return ParentNode("blockquote", children)
+
+def text_to_li(text):
+    children = list(map(text_node_to_html_node, text_to_textnodes(text)))
+    return ParentNode("li", children)
+
+def block_to_ul(block):
+    children = list(map(lambda x: text_to_li(x[2:]), block.split("\n")))
+    return ParentNode("ul", children)
+
+def block_to_ol(block):
+    children = list(map(lambda x: text_to_li(x[2:]), block.split("\n")))
+    return ParentNode("ol", children)
+
+def block_to_code(block):
+    return ParentNode("pre", ParentNode("code", LeafNode(None, block)))
+
+def block_to_heading(block):
+    heading = block.split(" ", 1)
+    heading_text = heading[1]
+    heading_number = len(heading[0])
+    children = list(map(text_node_to_html_node, text_to_textnodes(heading_text)))
+    return ParentNode(f"h{heading_number}", children)
+
+
+def block_to_paragraph(block):
+    children = list(map(text_node_to_html_node, text_to_textnodes(block)))
+    return ParentNode("p", children)
+
+def markdown_to_html_node(markdown):
+    blocks = markdown_to_blocks(markdown)
+    html_nodes = []
+    for block in blocks:
+        block_type = block_to_block_type(block)
+        if block_type == block_type_paragraph:
+            html_nodes.append(block_to_paragraph(block))
+        elif block_type == block_type_code:
+            html_nodes.append(block_to_code(block))
+        elif block_type == block_type_heading:
+            html_nodes.append(block_to_heading(block))
+        elif block_type == block_type_quote:
+            html_nodes.append(block_to_blockquote(block))
+        elif block_type == block_type_ulist:
+            html_nodes.append(block_to_ul(block))
+        elif block_type == block_type_olist:
+            html_nodes.append(block_to_ol(block))
+        else:
+            raise Exception(f"Block:\n{block}\n\nwith invalid block_type: {block_type}.")
+    return ParentNode("div", html_nodes)
+
+
 def main():
-    print("hola")
+    print("Somethin")
 
 main()

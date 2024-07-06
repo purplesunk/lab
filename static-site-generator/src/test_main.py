@@ -71,8 +71,24 @@ class TestMain(unittest.TestCase):
         self.assertEqual(block_to_block_type(olistblock), block_type_olist)
         heading = "## An insane heading"
         self.assertEqual(block_to_block_type(heading), block_type_heading)
+        heading = "# An insane heading"
+        self.assertEqual(block_to_block_type(heading), block_type_heading)
         bad = "1. Something\n* Instant\n* Uaa\n2. Think"
         self.assertEqual(block_to_block_type(bad), block_type_paragraph)
+
+        markdown = """# This is a heading
+
+This is a paragraph of text.
+
+* This is a list item
+* This is another list item"""
+
+        #insane = ParentNode("div", [ParentNode("h1", [LeafNode(None, "This is a heading")]), ParentNode("p", [LeafNode(None, "This is a paragraph of text.")]), ParentNode("ul", [ParentNode("li", [LeafNode(None, "This is a list item")]), ParentNode("li", [LeafNode(None, "This is another list item")])])])
+
+
+        #self.assertEqual(markdown_to_html_node(markdown), insane)
+
+
 
 
 if __name__ == "__main__":
