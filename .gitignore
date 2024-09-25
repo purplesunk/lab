@@ -1,3 +1,8 @@
 bootdev/*/*/*/__pycache__
 systematic-program-design/*/*.bak
 languages/*.pdf
+languages/*/*~
+languages/*/#*
+languages/*/compiled
+languages/*/*.bak
+languages/*/*.pdf
